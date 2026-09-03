@@ -1,0 +1,16 @@
+# Dependencias
+node_modules/
+
+# Build de producción
+frontend/dist/
+
+# Credenciales y secretos (NO subir)
+backend-php/config/config.php
+frontend/.env
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
