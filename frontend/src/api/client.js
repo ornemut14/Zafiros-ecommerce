@@ -35,6 +35,10 @@ export const api = {
   getCategories: () => request('/categories.php'),
   createCategory: (name) =>
     request('/categories.php', { method: 'POST', body: JSON.stringify({ name }) }),
+  updateCategory: (id, name) =>
+    request(`/categories.php?id=${id}`, { method: 'PUT', body: JSON.stringify({ name }) }),
+  deleteCategory: (id) =>
+    request(`/categories.php?id=${id}`, { method: 'DELETE' }),
 
   getProducts: () => request('/products.php'),
   getAllProducts: () => request('/products.php?all=1'),

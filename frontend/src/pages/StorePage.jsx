@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '../api/client';
 import { useCart } from '../context/CartContext';
 import CategoryTabs from '../components/CategoryTabs';
@@ -16,10 +16,12 @@ export default function StorePage() {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [active, setActive] = useState('Todas');
+  const [productSearch, setProductSearch] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState(null);
   const [showCart, setShowCart] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const savedScrollY = useRef(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -44,9 +46,17 @@ export default function StorePage() {
 
   useEffect(() => { loadAll(); }, []);
 
-  const visible = products.filter(
-    (p) => active === 'Todas' || p.category_name === active
-  );
+  const visible = products.filter((p) => {
+    const byCat = active === 'Todas' || p.category_name === active;
+    const q = productSearch.trim().toLowerCase();
+    const byText = !q || p.name.toLowerCase().includes(q);
+    return byCat && byText;
+  });
+
+  function clearFilters() {
+    setActive('Todas');
+    setProductSearch('');
+  }
 
   function handleAdd(product) {
     add(product.id, Number(product.stock));
@@ -59,10 +69,16 @@ export default function StorePage() {
     });
   }
 
-  function goToCategory(name) {
-    setActive(name);
+  function openDetail(product) {
+    savedScrollY.current = window.scrollY;
+    setSelectedProduct(product);
+    window.scrollTo(0, 0);
+  }
+
+  function closeDetail() {
+    setSelectedProduct(null);
     requestAnimationFrame(() => {
-      document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo(0, savedScrollY.current);
     });
   }
 
@@ -75,17 +91,12 @@ export default function StorePage() {
       {selectedProduct ? (
         <ProductDetail
           product={detailProduct}
-          onBack={() => setSelectedProduct(null)}
+          onBack={closeDetail}
         />
       ) : (
         <>
           <Hero
-            categories={categories}
-            products={products}
             onVerProductos={goToCatalog}
-            onSelectCategory={goToCategory}
-            onAdd={handleAdd}
-            onSelectProduct={(prod) => setSelectedProduct(prod)}
           />
           <CategoryTabs
             categories={categories}
@@ -95,6 +106,20 @@ export default function StorePage() {
             onAddCategory={() => setShowCategoryModal(true)}
           />
           <main id="productos">
+            <div className="store-filter">
+              <input
+                className="store-search"
+                type="text"
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                placeholder="Buscar producto..."
+              />
+              {(active !== 'Todas' || productSearch) && (
+                <button className="btn store-clear" onClick={clearFilters}>
+                  ✕ Limpiar filtros
+                </button>
+              )}
+            </div>
             {loading ? (
               <div className="empty">Cargando productos...</div>
             ) : error ? (
@@ -113,7 +138,7 @@ export default function StorePage() {
                     key={p.id}
                     product={p}
                     onAdd={handleAdd}
-                    onSelect={(prod) => setSelectedProduct(prod)}
+                    onSelect={openDetail}
                   />
                 ))}
               </div>

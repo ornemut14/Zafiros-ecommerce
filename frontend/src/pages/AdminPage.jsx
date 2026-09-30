@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 import ProductModal from '../components/ProductModal';
+import CategoryModal from '../components/CategoryModal';
 import HomeIcon from '../icons/home.svg?react';
 import SettingsIcon from '../icons/settings.svg?react';
 import BoxIcon from '../icons/box.svg?react';
@@ -31,6 +32,10 @@ export default function AdminPage() {
   const [deletingId, setDeletingId] = useState(null);
 
   const [activeSection, setActiveSection] = useState('home');
+  const [productSearch, setProductSearch] = useState('');
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [deletingCatId, setDeletingCatId] = useState(null);
 
   async function loadAll() {
     setLoading(true);
@@ -63,6 +68,28 @@ export default function AdminPage() {
       alert(err.message);
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleSaveCategory(name) {
+    if (editingCategory) {
+      await api.updateCategory(editingCategory.id, name);
+    } else {
+      await api.createCategory(name);
+    }
+    await loadAll();
+  }
+
+  async function handleDeleteCategory(id) {
+    if (!confirm('¿Eliminar esta categoría?')) return;
+    setDeletingCatId(id);
+    try {
+      await api.deleteCategory(id);
+      await loadAll();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setDeletingCatId(null);
     }
   }
 
@@ -133,9 +160,13 @@ export default function AdminPage() {
     setShowDiscountDropdown(false);
   }
 
-  const stockProducts = products.filter((p) => p.stock > 0);
-  const outOfStock = products.length - stockProducts.length;
-  const lowStock = products.filter((p) => p.stock > 0 && p.stock <= 3).length;
+  const q = productSearch.trim().toLowerCase();
+  const filteredProducts = products.filter(
+    (p) =>
+      !q ||
+      p.name.toLowerCase().includes(q) ||
+      (p.category_name || '').toLowerCase().includes(q)
+  );
 
   const dashboardItems = [
     {
@@ -155,6 +186,12 @@ export default function AdminPage() {
       icon: <ProductsIcon className="dash-icon" />,
       title: 'Cargar productos',
       desc: 'Agregar y editar productos',
+    },
+    {
+      id: 'categorias',
+      icon: <ProductsIcon className="dash-icon" />,
+      title: 'Categorías',
+      desc: 'Editar y eliminar categorías',
     },
   ];
 
@@ -185,17 +222,16 @@ export default function AdminPage() {
         >
           <ProductsIcon className="nav-icon" /> Productos
         </button>
+        <button
+          className={`admin-nav-link${activeSection === 'categorias' ? ' active' : ''}`}
+          onClick={() => setActiveSection('categorias')}
+        >
+          <ProductsIcon className="nav-icon" /> Categorías
+        </button>
       </div>
 
       {activeSection === 'home' && (
         <div className="dashboard">
-          <div className="dashboard-stats">
-            <div className="stat-card"><span className="stat-num">{products.length}</span><span className="stat-label">Productos</span></div>
-            <div className="stat-card"><span className="stat-num">{stockProducts.length}</span><span className="stat-label">Con stock</span></div>
-            <div className="stat-card"><span className="stat-num">{lowStock}</span><span className="stat-label">Pocas unidades</span></div>
-            <div className="stat-card"><span className="stat-num">{outOfStock}</span><span className="stat-label">Sin stock</span></div>
-          </div>
-
           <div className="dashboard-grid">
             {dashboardItems.map((item) => (
               <button
@@ -307,7 +343,15 @@ export default function AdminPage() {
       </div>
 
       <div className="admin-section">
-        <h3>Productos ({products.length})</h3>
+        <h3>Productos ({filteredProducts.length} de {products.length})</h3>
+        <div className="admin-search">
+          <input
+            type="text"
+            value={productSearch}
+            onChange={(e) => setProductSearch(e.target.value)}
+            placeholder="Buscar producto por nombre o categoría..."
+          />
+        </div>
         {loading ? (
           <div className="empty">Cargando productos...</div>
         ) : error ? (
@@ -326,7 +370,10 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {products.map((p) => (
+                {filteredProducts.length === 0 && (
+                  <tr><td colSpan="6" className="empty" style={{ border: 'none' }}>No se encontraron productos.</td></tr>
+                )}
+                {filteredProducts.map((p) => (
                   <tr key={p.id}>
                     <td>
                       {p.image_url ? (
@@ -363,6 +410,71 @@ export default function AdminPage() {
         )}
       </div>
         </>
+      )}
+
+      {activeSection === 'categorias' && (
+      <div className="admin-section">
+        <h3>Categorías ({categories.length})</h3>
+        <button
+          className="btn solid"
+          onClick={() => { setEditingCategory(null); setShowCategoryModal(true); }}
+        >
+          + Nueva categoría
+        </button>
+
+        {loading ? (
+          <div className="empty">Cargando categorías...</div>
+        ) : error ? (
+          <div className="empty">
+            <div>{error}</div>
+            <button className="btn solid" style={{ marginTop: 12 }} onClick={loadAll}>
+              Reintentar
+            </button>
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="empty">Todavía no hay categorías.</div>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Categoría</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((c) => (
+                  <tr key={c.id}>
+                    <td>{c.name}</td>
+                    <td>
+                      <button
+                        className="btn small"
+                        onClick={() => { setEditingCategory(c); setShowCategoryModal(true); }}
+                      >
+                        Editar
+                      </button>{' '}
+                      <button
+                        className="btn small danger"
+                        disabled={deletingCatId === c.id}
+                        onClick={() => handleDeleteCategory(c.id)}
+                      >
+                        {deletingCatId === c.id ? 'Eliminando...' : 'Eliminar'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      )}
+
+      {showCategoryModal && (
+        <CategoryModal
+          category={editingCategory}
+          onClose={() => setShowCategoryModal(false)}
+          onSave={handleSaveCategory}
+        />
       )}
 
       {showProductModal && (
