@@ -1,96 +1,94 @@
-# Joyería Lumière — E-commerce
+# Joyería Zafiros — E-commerce
 
-Proyecto compuesto por:
-- **backend-php/**: API en PHP puro (sin frameworks) + MySQL, pensada para funcionar en cualquier hosting compartido con cPanel/phpMyAdmin
-- **frontend/**: React (Vite)
+Tienda de joystickas con React (Vite) en el frontend y una API serverless en Node.js.
+Todo se despliega en **Vercel** contra una base de datos **Postgres** (Neon o Supabase).
 
-## 1. Base de datos (MySQL)
+## Por qué el backend ya no es PHP
 
-**Con phpMyAdmin (hosting compartido o XAMPP/MAMP local):**
-1. Creá una base de datos llamada `joyeria` (o el nombre que prefieras)
-2. Entrá a la pestaña **SQL** de phpMyAdmin sobre esa base
-3. Pegá el contenido completo de `backend-php/db/schema.sql` y ejecutalo
+El proyecto original usaba PHP + MySQL en InfinityFree. Se migró porque el hosting
+gratuito de InfinityFree tiene una protección anti-bot obligatoria que **no se puede
+desactivar**: devuelve una página con `aes.js` en vez de la respuesta de la API cuando
+la llamada viene de otro dominio. Una tienda en Vercel le pide los productos a
+`zafirosjoyas.site.je` desde un origen distinto, así que siempre recibía HTML en lugar
+de JSON y el catálogo nunca cargaba.
 
-Esto crea las tablas `categories`, `products`, `admins`, `store_config` y precarga categorías básicas (Anillos, Collares, Aros, Pulseras).
+La carpeta `backend-php/` se conserva a propósito como referencia del código anterior.
+No la uses ni la subas a ningún hosting.
 
-## 2. Backend PHP
+## Estructura
 
-Este zip ya incluye `backend-php/config/config.php` completo y listo para **XAMPP local** (usuario `root`, sin contraseña). Si usás otro hosting o contraseña de MySQL distinta, editá ese archivo con tus datos reales:
-   ```php
-   define('DB_HOST', 'localhost');
-   define('DB_NAME', 'joyeria');
-   define('DB_USER', 'tu_usuario_mysql');
-   define('DB_PASS', 'tu_password_mysql');
-   define('JWT_SECRET', 'una-frase-larga-y-secreta-que-inventes');
-   ```
+```
+frontend/
+  api/                 -> funciones serverless (Vercel los despliega como /api/*)
+    _lib/              -> db (pool de Postgres), jwt, helpers HTTP/CORS
+    auth.js            -> POST   login del admin
+    categories.js      -> GET/POST/PUT/DELETE  categorías
+    products.js        -> GET/POST/PUT/DELETE/PATCH  productos
+    config.js          -> GET/PUT  número de WhatsApp
+    db/schema.sql      -> estructura de tablas (Postgres)
+    db/seed-produccion.sql -> datos reales migrados desde MySQL
+  scripts/
+    mysql-to-postgres.mjs  -> convierte un dump de phpMyAdmin a Postgres
+    test-api.mjs           -> 27 pruebas contra la API
+  src/                 -> aplicación React
+```
 
-Creá tu usuario administrador. Dos formas, elegí la que te sirva:
+## 1. Base de datos
 
-   **Si tenés terminal/SSH:**
-   ```bash
-   cd backend-php/db
-   php seed_admin.php tu_usuario tu_contraseña
-   ```
+Creá una base en [Neon](https://neon.tech) o [Supabase](https://supabase.com) (ambos
+tienen plan gratuito) y ejecutá en el editor SQL, en este orden:
 
-   **Si NO tenés terminal (hosting compartido típico):**
-   - Subí el proyecto al hosting
-   - Entrá desde el navegador a `tudominio.com/backend-php/db/create_admin.php`
-   - Completá el formulario para crear tu usuario y contraseña
-   - **Borrá ese archivo del servidor** apenas termines (por seguridad)
+1. `frontend/api/db/schema.sql` — crea las tablas
+2. `frontend/api/db/seed-produccion.sql` — carga los 65 productos reales
 
-Levantar el backend (el `.env` del frontend ya viene apuntando a esta opción):
+Copiá la **connection string** que te dan. La vas a necesitar como `DATABASE_URL`.
 
-   **Con XAMPP (recomendado para probar en tu compu):**
-   - Copiá la carpeta `backend-php` dentro de `htdocs/joyeria/` (ej. `C:\xampp\htdocs\joyeria\backend-php`)
-   - Iniciá **Apache** y **MySQL** desde el Panel de Control de XAMPP
-   - Probá que responda entrando a `http://localhost/joyeria/backend-php/api/products.php` (debería mostrar `[]`)
+## 2. Deploy en Vercel
 
-   **Alternativa con el servidor propio de PHP** (si no querés usar XAMPP):
-   ```bash
-   cd backend-php
-   php -S localhost:8000 -t api
-   ```
-   En ese caso cambiá `VITE_API_URL` en `frontend/.env` a `http://localhost:8000`.
+1. Importá el repositorio en Vercel
+2. **Root Directory = `frontend`** ← obligatorio
+3. Framework: se detecta solo como Vite
+4. Cargá las variables de entorno (Settings → Environment Variables):
 
-   **Para un hosting real (cPanel, etc.):** simplemente subís la carpeta `backend-php` vía FTP/File Manager; Apache ya sabe correr `.php` sin configuración extra. Ahí también vas a tener que ajustar `VITE_API_URL` a tu dominio real.
+| Variable | Dónde | Valor |
+|---|---|---|
+| `DATABASE_URL` | Solo servidor | la connection string de Neon/Supabase |
+| `JWT_SECRET` | Solo servidor | una frase larga y secreta que inventes |
+| `VITE_CLOUDINARY_CLOUD_NAME` | Frontend y servidor | `rawwtykh` |
+| `VITE_CLOUDINARY_UPLOAD_PRESET` | Frontend y servidor | `uqa8a7zk` |
+| `VITE_API_URL` | Frontend | **vacío** — la API está en el mismo dominio |
 
-## 3. Fotos de producto (Cloudinary)
+`VITE_API_URL` se deja vacío a propósito: como la API y la tienda se sirven desde el
+mismo dominio de Vercel, las rutas `/api/*` son relativas y no hay CORS que negociar.
 
-1. Entrá a [console.cloudinary.com](https://console.cloudinary.com) → ⚙️ **Settings** → **Upload**
-2. **Upload presets** → **Add upload preset** → **Signing Mode: Unsigned** → guardar
-3. Anotá tu **Cloud name** (arriba a la izquierda del dashboard) y el **nombre del preset** que acabás de crear
-
-Las fotos se suben directo desde el navegador del admin a Cloudinary (no pasan por el backend PHP), y solo guardamos la URL resultante en la base de datos.
-
-## 4. Frontend
-
-El `frontend/.env` de este zip ya viene completo con tu `cloud_name` y `upload_preset` de Cloudinary, apuntando a la ruta de XAMPP. Si corrés el backend distinto (por ejemplo con `php -S`), ajustá `VITE_API_URL` como se indicó arriba.
+## Desarrollo local
 
 ```bash
 cd frontend
 npm install
-npm run dev    # http://localhost:5173
+npm run dev          # vercel dev: sirve la app y las funciones a la vez
+```
+
+Requiere `DATABASE_URL` y `JWT_SECRET` en un `.env` local. Para probar la API sin
+levantar Vercel:
+
+```bash
+node scripts/test-api.mjs
 ```
 
 ## Flujo de uso
 
-1. Entrá a la web como cliente y navegá el catálogo por categoría.
-2. Hacé clic en "Iniciar sesión" y entrá con el usuario/contraseña que creaste.
-3. En "Configuración de la tienda" cargá tu número de WhatsApp (con código de país, sin el +).
-4. Cargá categorías y productos desde el panel.
-5. El cliente arma su carrito y presiona "Finalizar compra por WhatsApp": se abre WhatsApp con el detalle y el total.
-6. **Vos, como administrador, una vez que confirmás el pago, entrás al panel y le bajás el stock manualmente** a cada producto vendido.
-7. Si el stock de un producto llega a 0, automáticamente deja de aparecer en el catálogo del cliente (el endpoint público solo devuelve `stock > 0`), pero en tu panel seguís viéndolo marcado como "Sin stock" para reponerlo cuando quieras.
+1. El cliente navega el catálogo por categoría.
+2. Entra como admin y configura su número de WhatsApp.
+3. Carga categorías y productos; las fotos se suben directo a Cloudinary desde el
+   navegador y solo se guarda la URL en la base.
+4. El cliente arma el carrito y manda el pedido por WhatsApp.
+5. El admin descuenta el stock manualmente al confirmar el pago.
+6. Un producto con stock 0 desaparece del catálogo público, pero sigue visible en el panel.
 
-## Notas de seguridad para producción
+## Notas de seguridad
 
-- `config.php` nunca debe subirse a un repositorio público ni quedar accesible por navegador fuera de la carpeta protegida del hosting.
-- Borrá `db/create_admin.php` del servidor apenas crees tu usuario.
-- Considerá restringir `Access-Control-Allow-Origin` en `helpers/cors.php` a tu dominio real en vez de `*` una vez que la tienda esté online.
-- Usá siempre HTTPS en producción (la mayoría de los hostings lo dan gratis con Let's Encrypt).
-
-## Próximos pasos sugeridos
-
-- Subida de imágenes reales (guardando la ruta/URL en la tabla `products`).
-- Historial de pedidos/ventas en una tabla `orders` (hoy el pedido solo viaja por WhatsApp, no queda registrado en la base).
-- Deploy: cualquier hosting compartido con PHP+MySQL para el backend, y Vercel/Netlify para el frontend React.
+- `DATABASE_URL` y `JWT_SECRET` solo viven en el panel de Vercel. Nunca en git.
+- El token de sesión es un JWT HS256 que expira a las 8 horas.
+- Las contraseñas se guardan como hash bcrypt.
+- Para producción conviene restringir el CORS a tu dominio en vez de `*`.
