@@ -7,9 +7,6 @@ export default function ProductCard({ product, onAdd, onSelect }) {
   if (outOfStock) {
     stockNote = 'Sin stock';
     stockClass = 'low';
-  } else if (stock <= 3) {
-    stockNote = 'Últimas unidades';
-    stockClass = 'low';
   } else {
     stockNote = 'Disponible';
   }

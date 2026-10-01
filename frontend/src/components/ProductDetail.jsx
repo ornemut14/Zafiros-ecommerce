@@ -47,9 +47,6 @@ export default function ProductDetail({ product, onBack }) {
   if (outOfStock) {
     stockNote = 'Sin stock';
     stockClass = 'low';
-  } else if (stock <= 3) {
-    stockNote = 'Últimas unidades';
-    stockClass = 'low';
   } else {
     stockNote = 'Disponible';
   }
