@@ -1,10 +1,14 @@
-import { createContext, useContext, useState } from 'react';
-import { api } from '../api/client';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { api, onSessionExpired } from '../api/client';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [username, setUsername] = useState(localStorage.getItem('admin_username'));
+
+  // La API limpia la sesión y dispara este evento cuando el token expiró,
+  // así el panel se cierra solo en vez de quedar registrando 401 por consola.
+  useEffect(() => onSessionExpired(() => setUsername(null)), []);
 
   async function login(user, password) {
     const data = await api.login(user, password);
