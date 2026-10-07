@@ -689,10 +689,39 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
   .detail-layout{grid-template-columns:1fr;gap:24px;}
   .detail-main{padding:28px 18px 64px;}
   .hero-actions .btn{width:100%;}
+  .hero-meta{flex-wrap:wrap;gap:16px;}
   .news-form{flex-direction:column;}
   .news-form button{padding:16px;}
   .site-nav{display:none;}
   .site-nav.mobile-open{display:flex;}
   .mobile-nav-row{display:flex!important;}
+  /* Header compacto: Panel + Salir + icono sin apretar el logo */
+  .site-header-inner{padding:12px 12px;gap:8px;}
+  .site-header-right{gap:2px;}
+  .brand-logo{font-size:19px;letter-spacing:.2em;text-indent:.2em;}
+  .brand-logo small{font-size:8px;letter-spacing:.36em;text-indent:.36em;}
+  .header-logout-btn{font-size:9.5px;letter-spacing:.12em;padding:6px 2px;}
+  .icon-btn{width:34px;height:34px;}
+  /* Filtros en columna, pills más chicos y buscador full */
+  .store-filter{margin-bottom:14px;}
+  .store-search{min-width:0;max-width:none;}
+  .filter-bar{gap:10px;margin-bottom:24px;}
+  .mat-row{gap:8px;}
+  .mat-pills{gap:6px;}
+  .cat-pill{padding:8px 14px;font-size:10px;letter-spacing:.12em;}
+  .filter-clear{padding:8px 14px;font-size:10px;letter-spacing:.12em;}
+  /* Avisos y admin cómodos en pantalla chica */
+  .empty{padding:48px 20px;}
+  .empty-title{font-size:24px;}
+  .admin-nav{gap:6px;}
+  .admin-nav-link{padding:8px 14px;font-size:11px;}
+  .admin-section{padding:18px 14px;}
+  .panel{padding:28px 20px;}
+  .modal{padding:28px 20px;}
 }
 @media (min-width:641px){.mobile-nav-row{display:none!important;}}
+@media (max-width:380px){
+  /* En pantallas muy chicas el icono ya cierra sesión: ocultamos el texto largo */
+  .site-header-right .header-logout-btn:nth-of-type(2){display:none;}
+  .brand-logo{font-size:17px;}
+}
