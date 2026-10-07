@@ -5,6 +5,7 @@ export default function LoginModal({ onClose }) {
   const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -35,12 +36,34 @@ export default function LoginModal({ onClose }) {
         <label>Usuario</label>
         <input value={username} onChange={(e) => setUsername(e.target.value)} />
         <label>Contraseña</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-        />
+        <div className="password-wrap">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+          />
+          <button
+            type="button"
+            className="password-toggle"
+            onClick={() => setShowPassword((v) => !v)}
+            title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          >
+            {showPassword ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M3 3l18 18" />
+                <path d="M10.6 5.1A9.8 9.8 0 0 1 12 5c7 0 11 7 11 7a17.6 17.6 0 0 1-2.2 3.1M6.6 6.6C3.8 8.2 1 12 1 12s4 7 11 7c1.5 0 2.9-.3 4.1-.8" />
+                <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            )}
+          </button>
+        </div>
         {error && <div className="error-text">{error}</div>}
         <div className="modal-actions">
           <button className="btn" disabled={loading} onClick={onClose}>Cancelar</button>
