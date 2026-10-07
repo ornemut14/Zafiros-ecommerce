@@ -42,7 +42,21 @@ export default function CartPanel({ products, whatsappNumber, onClose, onCheckou
             ? 'Piezas elegidas con calma.'
             : `${lines.length} ${lines.length === 1 ? 'pieza seleccionada' : 'piezas seleccionadas'}`}
         </div>
-        {lines.length === 0 && <div className="empty">Tu carrito está vacío.</div>}
+        {lines.length === 0 && (
+          <div className="empty" style={{ marginTop: 8 }}>
+            <div className="empty-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 7h15l-1.5 9h-12z" />
+                <path d="M6 7l-1-4H2" />
+                <circle cx="9" cy="20" r="1.4" />
+                <circle cx="17" cy="20" r="1.4" />
+              </svg>
+            </div>
+            <h3 className="empty-title">Tu carrito está vacío</h3>
+            <div className="empty-divider" />
+            <p className="empty-text">Elegí con calma esas piezas que se sientan tuyas.</p>
+          </div>
+        )}
         {lines.map((p) => (
           <div className="cart-item" key={p.id}>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>

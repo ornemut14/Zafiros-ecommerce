@@ -157,19 +157,39 @@ export default function StorePage({ onContact }) {
   }
 
   function renderResults() {
-    if (loading) return <div className="empty">Cargando productos...</div>;
+    if (loading) return (
+      <div className="empty">
+        <div className="empty-icon" aria-hidden="true">✦</div>
+        <p className="empty-text">Cargando piezas…</p>
+      </div>
+    );
     if (error) {
       return (
         <div className="empty">
-          <div>{error}</div>
-          <button className="btn solid" style={{ marginTop: 12 }} onClick={loadAll}>
+          <span className="empty-eyebrow">Zafiros</span>
+          <div className="empty-icon" aria-hidden="true">—</div>
+          <h3 className="empty-title">Algo no salió bien</h3>
+          <div className="empty-divider" />
+          <p className="empty-text">{error}</p>
+          <button className="btn solid" onClick={loadAll}>
             Reintentar
           </button>
         </div>
       );
     }
     if (visible.length === 0) {
-      return <div className="empty">No hay piezas que coincidan con esos filtros.</div>;
+      return (
+        <div className="empty">
+          <span className="empty-eyebrow">Sin resultados</span>
+          <div className="empty-icon" aria-hidden="true">✦</div>
+          <h3 className="empty-title">No hay piezas con esos filtros</h3>
+          <div className="empty-divider" />
+          <p className="empty-text">Probá con otra búsqueda o limpiá los filtros para ver toda la colección.</p>
+          <button className="btn" onClick={clearFilters}>
+            Limpiar filtros
+          </button>
+        </div>
+      );
     }
     return (
       <>
