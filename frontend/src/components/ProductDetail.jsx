@@ -101,9 +101,12 @@ export default function ProductDetail({ product, onBack }) {
         </div>
 
         <div className="detail-info">
-          <div className="cat-tag">{product.category_name || ''}</div>
+          <span className="section-eyebrow">{product.category_name || 'Zafiros'}</span>
           <h2 className="detail-title">{product.name}</h2>
           <div className="detail-price">${Number(product.price).toLocaleString('es-AR')}</div>
+          <p className="detail-desc">
+            Pieza de la colección Zafiros — delicada, atemporal y pensada para acompañarte todos los días.
+          </p>
 
           <div className={`stock-note ${stockClass}`} style={{ marginTop: 6 }}>
             {outOfStock ? 'Sin stock' : `${stockNote} — ${stock} disponible${stock === 1 ? '' : 's'}`}
@@ -135,6 +138,10 @@ export default function ProductDetail({ product, onBack }) {
               Ya alcanzaste el máximo disponible de este producto en el carrito.
             </div>
           )}
+          <div className="split-list" style={{ marginTop: 22, paddingTop: 22 }}>
+            <li>Envíos a todo el país</li>
+            <li>Compra segura por WhatsApp</li>
+          </div>
         </div>
       </div>
 

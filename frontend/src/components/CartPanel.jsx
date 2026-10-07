@@ -37,21 +37,32 @@ export default function CartPanel({ products, whatsappNumber, onClose, onCheckou
     <div className="panel-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="panel">
         <h2>Tu carrito</h2>
+        <div className="panel-sub">
+          {lines.length === 0
+            ? 'Piezas elegidas con calma.'
+            : `${lines.length} ${lines.length === 1 ? 'pieza seleccionada' : 'piezas seleccionadas'}`}
+        </div>
         {lines.length === 0 && <div className="empty">Tu carrito está vacío.</div>}
         {lines.map((p) => (
           <div className="cart-item" key={p.id}>
-            <div>
-              <div>{p.name}</div>
-              <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-                ${Number(p.price).toLocaleString('es-AR')} c/u
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              {p.image_url && (
+                <img className="cart-item-thumb" src={p.image_url} alt={p.name} />
+              )}
+              <div>
+                <div className="cart-item-name">{p.name}</div>
+                <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                  ${Number(p.price).toLocaleString('es-AR')} c/u
+                </div>
               </div>
             </div>
             <div className="qty-ctrl">
-              <button onClick={() => changeQty(p.id, -1, p.stock)}>−</button>
+              <button onClick={() => changeQty(p.id, -1, p.stock)} aria-label="Quitar uno">−</button>
               <span>{items[p.id]}</span>
               <button
                 onClick={() => changeQty(p.id, 1, p.stock)}
                 disabled={items[p.id] >= Number(p.stock)}
+                aria-label="Agregar uno"
               >
                 +
               </button>
@@ -62,11 +73,11 @@ export default function CartPanel({ products, whatsappNumber, onClose, onCheckou
           <span>Total</span>
           <span>${total.toLocaleString('es-AR')}</span>
         </div>
-        <button className="btn solid" style={{ width: '100%' }} onClick={checkout}>
+        <button className="btn solid block" onClick={checkout}>
           Finalizar compra por WhatsApp
         </button>
-        <button className="btn" style={{ width: '100%', marginTop: 8 }} onClick={onClose}>
-          Seguir comprando
+        <button className="btn block" style={{ marginTop: 10 }} onClick={onClose}>
+          Seguir explorando
         </button>
       </div>
     </div>

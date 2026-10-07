@@ -29,7 +29,9 @@ export default function LoginModal({ onClose }) {
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal">
+        <span className="section-eyebrow">Zafiros</span>
         <h2>Acceso administrador</h2>
+        <div className="modal-sub">Ingresá para gestionar la boutique.</div>
         <label>Usuario</label>
         <input value={username} onChange={(e) => setUsername(e.target.value)} />
         <label>Contraseña</label>

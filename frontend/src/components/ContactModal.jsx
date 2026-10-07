@@ -10,7 +10,9 @@ export default function ContactModal({ onClose }) {
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal">
+        <span className="section-eyebrow">Zafiros</span>
         <h2>Contacto</h2>
+        <div className="modal-sub">Estamos para ayudarte a elegir tu próxima pieza.</div>
 
         <label>Instagram</label>
         <a
