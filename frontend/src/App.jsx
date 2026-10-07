@@ -113,13 +113,18 @@ function AppInner() {
       {isAdmin && (
         <div className="admin-bar">
           <span>Modo administrador activo</span>
-          <button className="btn small" onClick={() => setView(view === 'store' ? 'admin' : 'store')}>
-            {view === 'store' ? 'Ver panel de productos' : 'Ver tienda'}
-          </button>
+          <span style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button className="btn small" onClick={() => setView(view === 'store' ? 'admin' : 'store')}>
+              {view === 'store' ? 'Ver panel de productos' : 'Ver tienda'}
+            </button>
+            <button className="btn small" onClick={() => { if (confirm('¿Cerrar sesión de administrador?')) logout(); }}>
+              Cerrar sesión
+            </button>
+          </span>
         </div>
       )}
 
-      {view === 'admin' && isAdmin ? <AdminPage /> : <StorePage onContact={openContact} homeSignal={storeHomeSignal} />}
+      {view === 'admin' && isAdmin ? <AdminPage onViewStore={() => setView('store')} /> : <StorePage onContact={openContact} homeSignal={storeHomeSignal} />}
 
       <footer className="footer">
         <div className="footer-inner">

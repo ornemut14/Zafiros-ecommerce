@@ -7,9 +7,11 @@ import SettingsIcon from '../icons/settings.svg?react';
 import BoxIcon from '../icons/box.svg?react';
 import ProductsIcon from '../icons/products.svg?react';
 import PlusIcon from '../icons/plus.svg?react';
+import { useAuth } from '../context/AuthContext';
 import { CategoryIcon, GemIcon, MaterialIcon, StackIcon } from '../components/CategoryIcon';
 
-export default function AdminPage() {
+export default function AdminPage({ onViewStore }) {
+  const { logout } = useAuth();
   const [categories, setCategories] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [products, setProducts] = useState([]);
@@ -280,6 +282,24 @@ export default function AdminPage() {
           onClick={() => setActiveSection('materiales')}
         >
           <GemIcon className="nav-icon" /> Materiales
+        </button>
+        <span style={{ flex: 1 }} />
+        {onViewStore && (
+          <button className="admin-nav-link" onClick={onViewStore} title="Volver a la página principal">
+            <HomeIcon className="nav-icon" /> Ver tienda
+          </button>
+        )}
+        <button
+          className="admin-nav-link"
+          onClick={() => { if (confirm('¿Cerrar sesión de administrador?')) logout(); }}
+          title="Cerrar sesión y volver a la tienda"
+        >
+          <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Cerrar sesión
         </button>
       </div>
 
