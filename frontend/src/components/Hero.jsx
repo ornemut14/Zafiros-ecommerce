@@ -16,7 +16,7 @@ export default function Hero({ onVerProductos }) {
           <button className="btn solid hero-btn" onClick={onVerProductos}>
             Ver colección
           </button>
-          <button className="hero-link" onClick={onVerProductos}>
+          <button className="link-arrow" onClick={onVerProductos}>
             Novedades →
           </button>
         </div>

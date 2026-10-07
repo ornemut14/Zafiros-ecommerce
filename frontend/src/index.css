@@ -545,6 +545,11 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
 }
 .admin-nav-link:hover{border-color:var(--cocoa);color:var(--cocoa);}
 .admin-nav-link.active{background:var(--cocoa);color:#F7F4EF;border-color:var(--cocoa);}
+.admin-nav-link .nav-icon{width:15px;height:15px;color:var(--gold-deep);flex-shrink:0;}
+.admin-nav-link.active .nav-icon{color:#F7F4EF;}
+.nav-icon{width:15px;height:15px;flex-shrink:0;}
+.dash-icon{width:32px;height:32px;flex-shrink:0;}
+.dashboard-card-icon{display:flex;align-items:center;justify-content:center;color:var(--gold-deep);}
 .dashboard{display:flex;flex-direction:column;gap:24px;}
 .dashboard-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;}
 .stat-card{background:var(--card);border:1px solid var(--line);border-radius:2px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:6px;}
