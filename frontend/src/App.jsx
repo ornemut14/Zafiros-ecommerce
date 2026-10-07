@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import StorePage from './pages/StorePage';
@@ -12,6 +12,12 @@ function AppInner() {
   const [showLogin, setShowLogin] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // El admin entra directo al panel (la landing es solo para clientes).
+  // El cambio manual con el botón se respeta hasta el próximo login/logout.
+  useEffect(() => {
+    setView(isAdmin ? 'admin' : 'store');
+  }, [isAdmin]);
 
   function goToId(id) {
     setView('store');

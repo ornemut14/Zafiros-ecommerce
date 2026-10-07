@@ -24,6 +24,7 @@ export default function StorePage({ onContact }) {
   const [showCart, setShowCart] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showCatalog, setShowCatalog] = useState(false);
   const savedScrollY = useRef(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -78,6 +79,80 @@ export default function StorePage({ onContact }) {
     setProductSearch('');
   }
 
+  function renderFilters() {
+    return (
+      <div className="store-filter">
+        <input
+          className="store-search"
+          type="text"
+          value={productSearch}
+          onChange={(e) => setProductSearch(e.target.value)}
+          placeholder="Buscar pieza..."
+          aria-label="Buscar producto"
+        />
+        {materials.length > 0 && (
+          <select
+            className="store-select"
+            value={activeMaterial}
+            onChange={(e) => setActiveMaterial(e.target.value)}
+            aria-label="Filtrar por material"
+          >
+            <option value="Todos">Material: Todos</option>
+            {materials.map((m) => (
+              <option key={m.id} value={m.name}>{m.name}</option>
+            ))}
+          </select>
+        )}
+        {(active !== 'Todas' || activeMaterial !== 'Todos' || productSearch) && (
+          <button className="btn store-clear" onClick={clearFilters}>
+            ✕ Limpiar filtros
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  function renderResults() {
+    if (loading) return <div className="empty">Cargando productos...</div>;
+    if (error) {
+      return (
+        <div className="empty">
+          <div>{error}</div>
+          <button className="btn solid" style={{ marginTop: 12 }} onClick={loadAll}>
+            Reintentar
+          </button>
+        </div>
+      );
+    }
+    if (visible.length === 0) {
+      return <div className="empty">No hay piezas que coincidan con esos filtros.</div>;
+    }
+    return (
+      <>
+        <div className="grid">
+          {shown.map((p) => (
+            <ProductCard
+              key={p.id}
+              product={p}
+              onAdd={handleAdd}
+              onSelect={openDetail}
+            />
+          ))}
+        </div>
+        {remaining > 0 && (
+          <div className="explore-more">
+            <button
+              className="btn"
+              onClick={() => setShownCount((n) => n + PAGE_SIZE)}
+            >
+              Ver más ({remaining} {remaining === 1 ? 'pieza' : 'piezas'})
+            </button>
+          </div>
+        )}
+      </>
+    );
+  }
+
   function handleAdd(product) {
     add(product.id, Number(product.stock));
   }
@@ -102,6 +177,21 @@ export default function StorePage({ onContact }) {
     });
   }
 
+  // Catálogo completo: vista propia con todo, reutilizando los filtros.
+  function openCatalog() {
+    savedScrollY.current = window.scrollY;
+    clearFilters();
+    setShowCatalog(true);
+    window.scrollTo(0, 0);
+  }
+
+  function closeCatalog() {
+    setShowCatalog(false);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, savedScrollY.current);
+    });
+  }
+
   const detailProduct = selectedProduct
     ? products.find((p) => String(p.id) === String(selectedProduct.id))
     : null;
@@ -113,6 +203,43 @@ export default function StorePage({ onContact }) {
           product={detailProduct}
           onBack={closeDetail}
         />
+      ) : showCatalog ? (
+        <main>
+          <button className="btn back-link" onClick={closeCatalog}>
+            ← Volver a la tienda
+          </button>
+          <div className="shop-head">
+            <div>
+              <span className="section-eyebrow">Zafiros</span>
+              <h2>Catálogo completo</h2>
+              <p>
+                {products.length === 1
+                  ? '1 pieza en total'
+                  : `${products.length} piezas en total`}
+                {' '}— explorá sin apuro.
+              </p>
+            </div>
+          </div>
+          <div className="cats" style={{ padding: '0 0 24px', border: 'none', maxWidth: 'none', margin: 0 }}>
+            <button
+              className={`cat-pill ${active === 'Todas' ? 'active' : ''}`}
+              onClick={() => setActive('Todas')}
+            >
+              Todas
+            </button>
+            {categories.map((c) => (
+              <button
+                key={c.id}
+                className={`cat-pill ${active === c.name ? 'active' : ''}`}
+                onClick={() => setActive(c.name)}
+              >
+                {c.name}
+              </button>
+            ))}
+          </div>
+          {renderFilters()}
+          {renderResults()}
+        </main>
       ) : (
         <>
           <Hero onVerProductos={goToCatalog} />
@@ -139,72 +266,11 @@ export default function StorePage({ onContact }) {
                   {' '}— elegidas para acompañar cada momento.
                 </p>
               </div>
-              <button className="link-arrow" onClick={clearFilters}>Ver todos →</button>
+              <button className="link-arrow" onClick={openCatalog}>Ver todos →</button>
             </div>
 
-            <div className="store-filter">
-              <input
-                className="store-search"
-                type="text"
-                value={productSearch}
-                onChange={(e) => setProductSearch(e.target.value)}
-                placeholder="Buscar pieza..."
-                aria-label="Buscar producto"
-              />
-              {materials.length > 0 && (
-                <select
-                  className="store-select"
-                  value={activeMaterial}
-                  onChange={(e) => setActiveMaterial(e.target.value)}
-                  aria-label="Filtrar por material"
-                >
-                  <option value="Todos">Material: Todos</option>
-                  {materials.map((m) => (
-                    <option key={m.id} value={m.name}>{m.name}</option>
-                  ))}
-                </select>
-              )}
-              {(active !== 'Todas' || activeMaterial !== 'Todos' || productSearch) && (
-                <button className="btn store-clear" onClick={clearFilters}>
-                  ✕ Limpiar filtros
-                </button>
-              )}
-            </div>
-            {loading ? (
-              <div className="empty">Cargando productos...</div>
-            ) : error ? (
-              <div className="empty">
-                <div>{error}</div>
-                <button className="btn solid" style={{ marginTop: 12 }} onClick={loadAll}>
-                  Reintentar
-                </button>
-              </div>
-            ) : visible.length === 0 ? (
-              <div className="empty">No hay piezas que coincidan con esos filtros.</div>
-            ) : (
-              <>
-                <div className="grid">
-                  {shown.map((p) => (
-                    <ProductCard
-                      key={p.id}
-                      product={p}
-                      onAdd={handleAdd}
-                      onSelect={openDetail}
-                    />
-                  ))}
-                </div>
-                {remaining > 0 && (
-                  <div className="explore-more">
-                    <button
-                      className="btn"
-                      onClick={() => setShownCount((n) => n + PAGE_SIZE)}
-                    >
-                      Ver más ({remaining} {remaining === 1 ? 'pieza' : 'piezas'})
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
+            {renderFilters()}
+            {renderResults()}
           </main>
 
           <section className="split">

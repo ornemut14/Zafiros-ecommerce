@@ -536,6 +536,7 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
 .table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .table-wrap table{min-width:560px;}
 .admin-thumb{width:30px;height:34px;object-fit:cover;border-radius:2px;vertical-align:middle;margin-right:8px;background:var(--beige);}
+.table-glyph{width:18px;height:18px;color:var(--gold-deep);vertical-align:-4px;margin-right:8px;}
 .admin-nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;align-items:center;}
 .admin-nav-link{
   border:1px solid var(--line);background:var(--card);color:var(--muted);

@@ -7,6 +7,7 @@ import SettingsIcon from '../icons/settings.svg?react';
 import BoxIcon from '../icons/box.svg?react';
 import ProductsIcon from '../icons/products.svg?react';
 import PlusIcon from '../icons/plus.svg?react';
+import { CategoryIcon, GemIcon, MaterialIcon, StackIcon } from '../components/CategoryIcon';
 
 export default function AdminPage() {
   const [categories, setCategories] = useState([]);
@@ -229,13 +230,13 @@ export default function AdminPage() {
     },
     {
       id: 'categorias',
-      icon: <ProductsIcon className="dash-icon" />,
+      icon: <StackIcon className="dash-icon" />,
       title: 'Categorías',
       desc: 'Editar y eliminar categorías',
     },
     {
       id: 'materiales',
-      icon: <ProductsIcon className="dash-icon" />,
+      icon: <GemIcon className="dash-icon" />,
       title: 'Materiales',
       desc: 'Editar y eliminar materiales',
     },
@@ -278,7 +279,7 @@ export default function AdminPage() {
           className={`admin-nav-link${activeSection === 'materiales' ? ' active' : ''}`}
           onClick={() => setActiveSection('materiales')}
         >
-          <ProductsIcon className="nav-icon" /> Materiales
+          <GemIcon className="nav-icon" /> Materiales
         </button>
       </div>
 
@@ -435,8 +436,20 @@ export default function AdminPage() {
                       )}{' '}
                       {p.name}
                     </td>
-                    <td>{p.category_name}</td>
-                    <td>{p.material_name || '—'}</td>
+                    <td>
+                      <CategoryIcon name={p.category_name} className="table-glyph" />
+                      {p.category_name}
+                    </td>
+                    <td>
+                      {p.material_name ? (
+                        <>
+                          <MaterialIcon className="table-glyph" />
+                          {p.material_name}
+                        </>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
                     <td>${Number(p.price).toLocaleString('es-AR')}</td>
                     <td>{p.stock}</td>
                     <td>{p.stock <= 0 ? <span className="tag-nostock">Sin stock</span> : 'Visible'}</td>
@@ -497,7 +510,10 @@ export default function AdminPage() {
               <tbody>
                 {categories.map((c) => (
                   <tr key={c.id}>
-                    <td>{c.name}</td>
+                    <td>
+                      <CategoryIcon name={c.name} className="table-glyph" />
+                      {c.name}
+                    </td>
                     <td>
                       <button
                         className="btn small"
@@ -562,7 +578,10 @@ export default function AdminPage() {
               <tbody>
                 {materials.map((m) => (
                   <tr key={m.id}>
-                    <td>{m.name}</td>
+                    <td>
+                      <MaterialIcon className="table-glyph" />
+                      {m.name}
+                    </td>
                     <td>
                       <button
                         className="btn small"
