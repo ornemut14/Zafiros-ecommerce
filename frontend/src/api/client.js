@@ -63,6 +63,13 @@ export const api = {
     request(`/api/categories?id=${id}`, { method: 'PUT', body: JSON.stringify({ name }) }),
   deleteCategory: (id) => request(`/api/categories?id=${id}`, { method: 'DELETE' }),
 
+  getMaterials: () => request('/api/materials'),
+  createMaterial: (name) =>
+    request('/api/materials', { method: 'POST', body: JSON.stringify({ name }) }),
+  updateMaterial: (id, name) =>
+    request(`/api/materials?id=${id}`, { method: 'PUT', body: JSON.stringify({ name }) }),
+  deleteMaterial: (id) => request(`/api/materials?id=${id}`, { method: 'DELETE' }),
+
   getProducts: () => request('/api/products'),
   getAllProducts: () => request('/api/products?all=1'),
   createProduct: (payload) =>

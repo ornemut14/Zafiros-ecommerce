@@ -82,7 +82,7 @@ export default function ProductDetail({ product, onBack }) {
             {currentImg ? (
               <img src={currentImg} alt={product.name} />
             ) : (
-              <span className="icon detail-fallback">{product.icon || '💎'}</span>
+              <span className="icon detail-fallback">{product.icon || '✦'}</span>
             )}
           </div>
           {images.length > 1 && (
@@ -101,7 +101,10 @@ export default function ProductDetail({ product, onBack }) {
         </div>
 
         <div className="detail-info">
-          <span className="section-eyebrow">{product.category_name || 'Zafiros'}</span>
+          <span className="section-eyebrow">
+            {product.category_name || 'Zafiros'}
+            {product.material_name ? ` · ${product.material_name}` : ''}
+          </span>
           <h2 className="detail-title">{product.name}</h2>
           <div className="detail-price">${Number(product.price).toLocaleString('es-AR')}</div>
           <p className="detail-desc">

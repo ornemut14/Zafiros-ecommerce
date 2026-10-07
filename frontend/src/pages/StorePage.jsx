@@ -16,7 +16,9 @@ export default function StorePage({ onContact }) {
   const { add, count } = useCart();
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [materials, setMaterials] = useState([]);
   const [active, setActive] = useState('Todas');
+  const [activeMaterial, setActiveMaterial] = useState('Todos');
   const [productSearch, setProductSearch] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState(null);
   const [showCart, setShowCart] = useState(false);
@@ -40,6 +42,13 @@ export default function StorePage({ onContact }) {
       setCategories(cats);
       setProducts(prods);
       setWhatsappNumber(cfg.whatsapp_number);
+      // Materiales en llamada separada y tolerante: si el backend aún no
+      // tiene el endpoint, la tienda sigue funcionando sin filtro.
+      try {
+        setMaterials(await api.getMaterials());
+      } catch {
+        setMaterials([]);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -50,13 +59,14 @@ export default function StorePage({ onContact }) {
   useEffect(() => { loadAll(); }, []);
 
   // Al cambiar filtros o búsqueda, volver a mostrar solo la primera tanda
-  useEffect(() => { setShownCount(PAGE_SIZE); }, [active, productSearch]);
+  useEffect(() => { setShownCount(PAGE_SIZE); }, [active, activeMaterial, productSearch]);
 
   const visible = products.filter((p) => {
     const byCat = active === 'Todas' || p.category_name === active;
+    const byMat = activeMaterial === 'Todos' || p.material_name === activeMaterial;
     const q = productSearch.trim().toLowerCase();
     const byText = !q || p.name.toLowerCase().includes(q);
-    return byCat && byText;
+    return byCat && byMat && byText;
   });
 
   const shown = visible.slice(0, shownCount);
@@ -64,6 +74,7 @@ export default function StorePage({ onContact }) {
 
   function clearFilters() {
     setActive('Todas');
+    setActiveMaterial('Todos');
     setProductSearch('');
   }
 
@@ -95,10 +106,6 @@ export default function StorePage({ onContact }) {
     ? products.find((p) => String(p.id) === String(selectedProduct.id))
     : null;
 
-  const featured = products.find((p) => p.image_url) || products[0] || null;
-  const favorites = products.filter((p) => Number(p.stock) > 0).slice(0, 4);
-  const favoritesList = favorites.length > 0 ? favorites : products.slice(0, 4);
-
   return (
     <>
       {selectedProduct ? (
@@ -108,10 +115,7 @@ export default function StorePage({ onContact }) {
         />
       ) : (
         <>
-          <Hero
-            onVerProductos={goToCatalog}
-            featured={featured}
-          />
+          <Hero onVerProductos={goToCatalog} />
           <CategoryTabs
             categories={categories}
             active={active}
@@ -124,7 +128,10 @@ export default function StorePage({ onContact }) {
             <div className="shop-head">
               <div>
                 <span className="section-eyebrow">Catálogo</span>
-                <h2>{active === 'Todas' ? 'Todas las piezas' : active}</h2>
+                <h2>
+                  {active === 'Todas' ? 'Todas las piezas' : active}
+                  {activeMaterial !== 'Todos' ? ` · ${activeMaterial}` : ''}
+                </h2>
                 <p>
                   {visible.length === 1
                     ? '1 pieza disponible'
@@ -144,7 +151,20 @@ export default function StorePage({ onContact }) {
                 placeholder="Buscar pieza..."
                 aria-label="Buscar producto"
               />
-              {(active !== 'Todas' || productSearch) && (
+              {materials.length > 0 && (
+                <select
+                  className="store-select"
+                  value={activeMaterial}
+                  onChange={(e) => setActiveMaterial(e.target.value)}
+                  aria-label="Filtrar por material"
+                >
+                  <option value="Todos">Material: Todos</option>
+                  {materials.map((m) => (
+                    <option key={m.id} value={m.name}>{m.name}</option>
+                  ))}
+                </select>
+              )}
+              {(active !== 'Todas' || activeMaterial !== 'Todos' || productSearch) && (
                 <button className="btn store-clear" onClick={clearFilters}>
                   ✕ Limpiar filtros
                 </button>
@@ -160,7 +180,7 @@ export default function StorePage({ onContact }) {
                 </button>
               </div>
             ) : visible.length === 0 ? (
-              <div className="empty">Todavía no hay productos disponibles en esta categoría.</div>
+              <div className="empty">No hay piezas que coincidan con esos filtros.</div>
             ) : (
               <>
                 <div className="grid">
@@ -186,31 +206,6 @@ export default function StorePage({ onContact }) {
               </>
             )}
           </main>
-
-          {favoritesList.length > 0 && (
-            <section className="shop-cats" style={{ background: 'transparent', borderTop: '1px solid var(--line)' }}>
-              <div className="shop-cats-inner" style={{ maxWidth: 1280 }}>
-                <div className="shop-head" style={{ textAlign: 'left' }}>
-                  <div>
-                    <span className="section-eyebrow">Best sellers</span>
-                    <h2>Favoritos de Zafiros</h2>
-                    <p>Piezas elegidas para acompañar cada momento.</p>
-                  </div>
-                  <button className="link-arrow" onClick={goToCatalog}>Ver todos →</button>
-                </div>
-                <div className="grid" style={{ textAlign: 'left' }}>
-                  {favoritesList.map((p) => (
-                    <ProductCard
-                      key={`fav-${p.id}`}
-                      product={p}
-                      onAdd={handleAdd}
-                      onSelect={openDetail}
-                    />
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
 
           <section className="split">
             <div className="split-media">

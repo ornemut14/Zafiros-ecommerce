@@ -58,7 +58,10 @@ export default function ProductCard({ product, onAdd, onSelect }) {
       </div>
 
       <div className="card-body">
-        <div className="cat-tag">{product.category_name || 'Zafiros'}</div>
+        <div className="cat-tag">
+          {product.category_name || 'Zafiros'}
+          {product.material_name ? ` · ${product.material_name}` : ''}
+        </div>
         <h3>{product.name}</h3>
         <div className="price">${Number(product.price).toLocaleString('es-AR')}</div>
         <div className={`stock-note ${outOfStock ? 'low' : ''}`}>

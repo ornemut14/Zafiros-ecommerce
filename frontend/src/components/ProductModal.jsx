@@ -1,16 +1,39 @@
 import { useState } from 'react';
 import { uploadImageToCloudinary } from '../api/cloudinary';
 
-export default function ProductModal({ categories, product, onClose, onSave }) {
+export default function ProductModal({ categories, materials = [], product, onClose, onSave, onAddMaterial }) {
   const [name, setName] = useState(product?.name || '');
   const [price, setPrice] = useState(product?.price || '');
   const [stock, setStock] = useState(product?.stock ?? '');
   const [categoryId, setCategoryId] = useState(product?.category_id || categories[0]?.id || '');
-  const [icon, setIcon] = useState(product?.icon || '💍');
+  const [materialId, setMaterialId] = useState(product?.material_id || '');
+  const [localMaterials, setLocalMaterials] = useState(materials);
+  const [newMaterial, setNewMaterial] = useState('');
+  const [addingMaterial, setAddingMaterial] = useState(false);
   const [imageUrl, setImageUrl] = useState(product?.image_url || '');
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  async function handleQuickAddMaterial() {
+    const trimmed = newMaterial.trim();
+    if (!trimmed) return setError('Escribí el nombre del material.');
+    if (!onAddMaterial) return setError('No se puede agregar el material ahora.');
+    setAddingMaterial(true);
+    setError('');
+    try {
+      const created = await onAddMaterial(trimmed);
+      setLocalMaterials((prev) =>
+        [...prev, created].sort((a, b) => a.name.localeCompare(b.name))
+      );
+      setMaterialId(String(created.id));
+      setNewMaterial('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setAddingMaterial(false);
+    }
+  }
 
   async function handleFileChange(e) {
     const file = e.target.files?.[0];
@@ -44,6 +67,7 @@ export default function ProductModal({ categories, product, onClose, onSave }) {
     if (!Number.isInteger(stockNum)) return setError('El stock debe ser un número entero.');
     if (!categoryId) return setError('Seleccioná una categoría.');
     if (!Number.isInteger(Number(categoryId))) return setError('La categoría seleccionada no es válida.');
+    if (materialId && !Number.isInteger(Number(materialId))) return setError('El material seleccionado no es válido.');
 
     setSaving(true);
     setError('');
@@ -53,7 +77,8 @@ export default function ProductModal({ categories, product, onClose, onSave }) {
         price: priceNum,
         stock: stockNum,
         categoryId: Number(categoryId),
-        icon,
+        materialId: materialId ? Number(materialId) : null,
+        icon: '✦',
         imageUrl: imageUrl || null,
       });
       onClose();
@@ -87,6 +112,32 @@ export default function ProductModal({ categories, product, onClose, onSave }) {
           ))}
         </select>
 
+        <label>Material (opcional)</label>
+        <select value={materialId} onChange={(e) => setMaterialId(e.target.value)}>
+          <option value="">Sin especificar</option>
+          {localMaterials.map((m) => (
+            <option key={m.id} value={m.id}>{m.name}</option>
+          ))}
+        </select>
+        {onAddMaterial && (
+          <div className="inline-add">
+            <input
+              value={newMaterial}
+              onChange={(e) => setNewMaterial(e.target.value)}
+              placeholder="Nuevo material: Ej: Plata 925"
+              aria-label="Nuevo material"
+            />
+            <button
+              type="button"
+              className="btn small"
+              disabled={addingMaterial}
+              onClick={handleQuickAddMaterial}
+            >
+              {addingMaterial ? '...' : '+ Agregar'}
+            </button>
+          </div>
+        )}
+
         <label>Foto del producto</label>
         <input type="file" accept="image/*" onChange={handleFileChange} />
         {uploading && <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 6 }}>Subiendo imagen...</div>}
@@ -97,9 +148,6 @@ export default function ProductModal({ categories, product, onClose, onSave }) {
             style={{ marginTop: 10, width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 4 }}
           />
         )}
-
-        <label>Ícono de respaldo (emoji, se usa si no hay foto)</label>
-        <input value={icon} onChange={(e) => setIcon(e.target.value)} maxLength={4} />
 
         {error && <div className="error-text">{error}</div>}
         <div className="modal-actions">

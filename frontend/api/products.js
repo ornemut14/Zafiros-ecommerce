@@ -3,10 +3,34 @@ import { cors, id, readBody, requireAdmin, sendError, sendJson } from './_lib/ht
 
 const SELECT = `
   SELECT p.id, p.name, p.price, p.stock, p.icon, p.image_url,
-         c.id AS category_id, c.name AS category_name
+         c.id AS category_id, c.name AS category_name,
+         m.id AS material_id, m.name AS material_name
+  FROM products p
+  JOIN categories c ON c.id = p.category_id
+  LEFT JOIN materials m ON m.id = p.material_id
+`;
+
+// Resguardo: si la migración de materiales aún no se ejecutó en la base,
+// la tienda sigue funcionando (sin materiales) en vez de romperse.
+const SELECT_LEGACY = `
+  SELECT p.id, p.name, p.price, p.stock, p.icon, p.image_url,
+         c.id AS category_id, c.name AS category_name,
+         NULL AS material_id, NULL AS material_name
   FROM products p
   JOIN categories c ON c.id = p.category_id
 `;
+
+async function selectProducts(suffix, params) {
+  try {
+    return await query(`${SELECT} ${suffix}`, params);
+  } catch (error) {
+    // 42P01 = tabla inexistente (migración pendiente)
+    if (error?.code === '42P01') {
+      return await query(`${SELECT_LEGACY} ${suffix}`, params);
+    }
+    throw error;
+  }
+}
 
 export default async function handler(req, res) {
   if (cors(req, res)) return;
@@ -18,10 +42,10 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       if (req.query?.all) {
         if (!requireAdmin(req, res)) return;
-        const { rows } = await query(`${SELECT} ORDER BY p.created_at DESC`);
+        const { rows } = await selectProducts('ORDER BY p.created_at DESC');
         return sendJson(res, 200, rows);
       }
-      const { rows } = await query(`${SELECT} WHERE p.stock > 0 ORDER BY p.created_at DESC`);
+      const { rows } = await selectProducts('WHERE p.stock > 0 ORDER BY p.created_at DESC');
       return sendJson(res, 200, rows);
     }
 
@@ -34,6 +58,7 @@ export default async function handler(req, res) {
       const price = data.price;
       const stock = data.stock;
       const categoryId = data.categoryId;
+      const materialId = data.materialId ?? null;
       const icon = data.icon || '💎';
       const imageUrl = data.imageUrl || null;
 
@@ -41,12 +66,7 @@ export default async function handler(req, res) {
         return sendError(res, 400, 'Faltan campos requeridos.');
       }
 
-      const { rows } = await query(
-        `INSERT INTO products (name, price, stock, category_id, icon, image_url)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING id`,
-        [name, price, stock, categoryId, icon, imageUrl],
-      );
+      const { rows } = await insertProduct(name, price, stock, categoryId, materialId, icon, imageUrl);
 
       return sendJson(res, 201, await findOne(rows[0].id));
     }
@@ -59,19 +79,15 @@ export default async function handler(req, res) {
       }
 
       const data = readBody(req);
-      await query(
-        `UPDATE products
-         SET name = $1, price = $2, stock = $3, category_id = $4, icon = $5, image_url = $6
-         WHERE id = $7`,
-        [
-          data.name || '',
-          data.price ?? 0,
-          data.stock ?? 0,
-          data.categoryId ?? null,
-          data.icon || '💎',
-          data.imageUrl || null,
-          productId,
-        ],
+      await updateProduct(
+        productId,
+        data.name || '',
+        data.price ?? 0,
+        data.stock ?? 0,
+        data.categoryId ?? null,
+        data.materialId ?? null,
+        data.icon || '💎',
+        data.imageUrl || null,
       );
 
       const product = await findOne(productId);
@@ -123,6 +139,49 @@ export default async function handler(req, res) {
 }
 
 async function findOne(productId) {
-  const { rows } = await query(`${SELECT} WHERE p.id = $1`, [productId]);
+  const { rows } = await selectProducts('WHERE p.id = $1', [productId]);
   return rows[0] || null;
+}
+
+// Si la migración aún no se ejecutó, guarda sin material en vez de fallar.
+function isMissingColumn(error) {
+  return error?.code === '42P01' || error?.code === '42703';
+}
+
+async function insertProduct(name, price, stock, categoryId, materialId, icon, imageUrl) {
+  try {
+    return await query(
+      `INSERT INTO products (name, price, stock, category_id, material_id, icon, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id`,
+      [name, price, stock, categoryId, materialId, icon, imageUrl],
+    );
+  } catch (error) {
+    if (!isMissingColumn(error)) throw error;
+    return await query(
+      `INSERT INTO products (name, price, stock, category_id, icon, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id`,
+      [name, price, stock, categoryId, icon, imageUrl],
+    );
+  }
+}
+
+async function updateProduct(productId, name, price, stock, categoryId, materialId, icon, imageUrl) {
+  try {
+    return await query(
+      `UPDATE products
+       SET name = $1, price = $2, stock = $3, category_id = $4, material_id = $5, icon = $6, image_url = $7
+       WHERE id = $8`,
+      [name, price, stock, categoryId, materialId, icon, imageUrl, productId],
+    );
+  } catch (error) {
+    if (!isMissingColumn(error)) throw error;
+    return await query(
+      `UPDATE products
+       SET name = $1, price = $2, stock = $3, category_id = $4, icon = $5, image_url = $6
+       WHERE id = $7`,
+      [name, price, stock, categoryId, icon, imageUrl, productId],
+    );
+  }
 }

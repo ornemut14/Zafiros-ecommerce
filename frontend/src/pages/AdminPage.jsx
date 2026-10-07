@@ -10,6 +10,7 @@ import PlusIcon from '../icons/plus.svg?react';
 
 export default function AdminPage() {
   const [categories, setCategories] = useState([]);
+  const [materials, setMaterials] = useState([]);
   const [products, setProducts] = useState([]);
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [editingProduct, setEditingProduct] = useState(null);
@@ -36,6 +37,9 @@ export default function AdminPage() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [deletingCatId, setDeletingCatId] = useState(null);
+  const [showMaterialModal, setShowMaterialModal] = useState(false);
+  const [editingMaterial, setEditingMaterial] = useState(null);
+  const [deletingMatId, setDeletingMatId] = useState(null);
 
   async function loadAll() {
     setLoading(true);
@@ -49,6 +53,11 @@ export default function AdminPage() {
       setCategories(cats);
       setProducts(prods);
       setWhatsappNumber(cfg.whatsapp_number || '');
+      try {
+        setMaterials(await api.getMaterials());
+      } catch {
+        setMaterials([]);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -91,6 +100,36 @@ export default function AdminPage() {
     } finally {
       setDeletingCatId(null);
     }
+  }
+
+  async function handleSaveMaterial(name) {
+    if (editingMaterial) {
+      await api.updateMaterial(editingMaterial.id, name);
+    } else {
+      await api.createMaterial(name);
+    }
+    await loadAll();
+  }
+
+  async function handleDeleteMaterial(id) {
+    if (!confirm('¿Eliminar este material? Los productos que lo usen quedarán sin material asignado.')) return;
+    setDeletingMatId(id);
+    try {
+      await api.deleteMaterial(id);
+      await loadAll();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setDeletingMatId(null);
+    }
+  }
+
+  // Alta rápida de material desde el modal de producto: crea y devuelve
+  // el material para seleccionarlo al instante.
+  async function handleQuickAddMaterial(name) {
+    const created = await api.createMaterial(name);
+    setMaterials((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
+    return created;
   }
 
   async function handleSaveConfig() {
@@ -165,7 +204,8 @@ export default function AdminPage() {
     (p) =>
       !q ||
       p.name.toLowerCase().includes(q) ||
-      (p.category_name || '').toLowerCase().includes(q)
+      (p.category_name || '').toLowerCase().includes(q) ||
+      (p.material_name || '').toLowerCase().includes(q)
   );
 
   const dashboardItems = [
@@ -192,6 +232,12 @@ export default function AdminPage() {
       icon: <ProductsIcon className="dash-icon" />,
       title: 'Categorías',
       desc: 'Editar y eliminar categorías',
+    },
+    {
+      id: 'materiales',
+      icon: <ProductsIcon className="dash-icon" />,
+      title: 'Materiales',
+      desc: 'Editar y eliminar materiales',
     },
   ];
 
@@ -227,6 +273,12 @@ export default function AdminPage() {
           onClick={() => setActiveSection('categorias')}
         >
           <ProductsIcon className="nav-icon" /> Categorías
+        </button>
+        <button
+          className={`admin-nav-link${activeSection === 'materiales' ? ' active' : ''}`}
+          onClick={() => setActiveSection('materiales')}
+        >
+          <ProductsIcon className="nav-icon" /> Materiales
         </button>
       </div>
 
@@ -366,7 +418,7 @@ export default function AdminPage() {
             <table>
               <thead>
                 <tr>
-                  <th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th><th></th>
+                  <th>Producto</th><th>Categoría</th><th>Material</th><th>Precio</th><th>Stock</th><th>Estado</th><th></th>
                 </tr>
               </thead>
               <tbody>
@@ -384,6 +436,7 @@ export default function AdminPage() {
                       {p.name}
                     </td>
                     <td>{p.category_name}</td>
+                    <td>{p.material_name || '—'}</td>
                     <td>${Number(p.price).toLocaleString('es-AR')}</td>
                     <td>{p.stock}</td>
                     <td>{p.stock <= 0 ? <span className="tag-nostock">Sin stock</span> : 'Visible'}</td>
@@ -477,11 +530,81 @@ export default function AdminPage() {
         />
       )}
 
+      {activeSection === 'materiales' && (
+      <div className="admin-section">
+        <h3>Materiales ({materials.length})</h3>
+        <button
+          className="btn solid"
+          onClick={() => { setEditingMaterial(null); setShowMaterialModal(true); }}
+        >
+          + Nuevo material
+        </button>
+
+        {loading ? (
+          <div className="empty">Cargando materiales...</div>
+        ) : error ? (
+          <div className="empty">
+            <div>{error}</div>
+            <button className="btn solid" style={{ marginTop: 12 }} onClick={loadAll}>
+              Reintentar
+            </button>
+          </div>
+        ) : materials.length === 0 ? (
+          <div className="empty">Todavía no hay materiales. Si ves este mensaje, ejecutá la migración de materiales en la base de datos.</div>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Material</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {materials.map((m) => (
+                  <tr key={m.id}>
+                    <td>{m.name}</td>
+                    <td>
+                      <button
+                        className="btn small"
+                        onClick={() => { setEditingMaterial(m); setShowMaterialModal(true); }}
+                      >
+                        Editar
+                      </button>{' '}
+                      <button
+                        className="btn small danger"
+                        disabled={deletingMatId === m.id}
+                        onClick={() => handleDeleteMaterial(m.id)}
+                      >
+                        {deletingMatId === m.id ? 'Eliminando...' : 'Eliminar'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      )}
+
+      {showMaterialModal && (
+        <CategoryModal
+          category={editingMaterial}
+          onClose={() => setShowMaterialModal(false)}
+          onSave={handleSaveMaterial}
+          createTitle="Nuevo material"
+          editTitle="Editar material"
+          placeholder="Ej: Plata 925"
+        />
+      )}
+
       {showProductModal && (
         <ProductModal
           categories={categories}
+          materials={materials}
           product={editingProduct}
           onClose={() => setShowProductModal(false)}
+          onAddMaterial={handleQuickAddMaterial}
           onSave={async (payload) => {
             if (editingProduct) {
               await api.updateProduct(editingProduct.id, payload);

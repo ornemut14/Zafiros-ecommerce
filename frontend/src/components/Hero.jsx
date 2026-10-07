@@ -1,6 +1,6 @@
 import heroImg from '../assets/hero.jpg';
 
-export default function Hero({ onVerProductos, featured }) {
+export default function Hero({ onVerProductos }) {
   return (
     <section className="hero">
       <div className="hero-text">
@@ -26,18 +26,10 @@ export default function Hero({ onVerProductos, featured }) {
         <div className="hero-card">
           <img
             className="hero-img"
-            src={featured?.image_url || heroImg}
-            alt={featured?.name || 'Joyería Zafiros'}
+            src={heroImg}
+            alt="Joyería Zafiros"
           />
           <span className="hero-tag">Nueva colección</span>
-          {featured && (
-            <div className="hero-badge">
-              <span className="hero-badge-name">{featured.name}</span>
-              <span className="hero-badge-price">
-                ${Number(featured.price).toLocaleString('es-AR')}
-              </span>
-            </div>
-          )}
         </div>
       </div>
     </section>
