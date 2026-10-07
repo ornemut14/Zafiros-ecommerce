@@ -64,17 +64,6 @@ function AppInner() {
             >
               {menuOpen ? '✕' : '☰'}
             </button>
-            <button
-              className="icon-btn"
-              onClick={() => goToId('productos')}
-              title="Buscar"
-              aria-label="Buscar"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="11" cy="11" r="7" />
-                <path d="M21 21l-4.3-4.3" />
-              </svg>
-            </button>
           </div>
 
           <h1 className="brand-logo" onClick={() => goToId('inicio')}>
