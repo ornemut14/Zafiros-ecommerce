@@ -273,7 +273,7 @@ export default function AdminPage() {
           className={`admin-nav-link${activeSection === 'categorias' ? ' active' : ''}`}
           onClick={() => setActiveSection('categorias')}
         >
-          <ProductsIcon className="nav-icon" /> Categorías
+          <StackIcon className="nav-icon" /> Categorías
         </button>
         <button
           className={`admin-nav-link${activeSection === 'materiales' ? ' active' : ''}`}

@@ -81,34 +81,45 @@ export default function StorePage({ onContact }) {
 
   function renderFilters() {
     return (
-      <div className="store-filter">
-        <input
-          className="store-search"
-          type="text"
-          value={productSearch}
-          onChange={(e) => setProductSearch(e.target.value)}
-          placeholder="Buscar pieza..."
-          aria-label="Buscar producto"
-        />
+      <>
+        <div className="store-filter">
+          <input
+            className="store-search"
+            type="text"
+            value={productSearch}
+            onChange={(e) => setProductSearch(e.target.value)}
+            placeholder="Buscar pieza..."
+            aria-label="Buscar producto"
+          />
+          {(active !== 'Todas' || activeMaterial !== 'Todos' || productSearch) && (
+            <button className="btn store-clear" onClick={clearFilters}>
+              ✕ Limpiar filtros
+            </button>
+          )}
+        </div>
         {materials.length > 0 && (
-          <select
-            className="store-select"
-            value={activeMaterial}
-            onChange={(e) => setActiveMaterial(e.target.value)}
-            aria-label="Filtrar por material"
-          >
-            <option value="Todos">Material: Todos</option>
-            {materials.map((m) => (
-              <option key={m.id} value={m.name}>{m.name}</option>
-            ))}
-          </select>
+          <div className="mat-row">
+            <span className="mat-label">Material</span>
+            <div className="mat-pills">
+              <button
+                className={`cat-pill${activeMaterial === 'Todos' ? ' active' : ''}`}
+                onClick={() => setActiveMaterial('Todos')}
+              >
+                Todos
+              </button>
+              {materials.map((m) => (
+                <button
+                  key={m.id}
+                  className={`cat-pill${activeMaterial === m.name ? ' active' : ''}`}
+                  onClick={() => setActiveMaterial(m.name)}
+                >
+                  {m.name}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
-        {(active !== 'Todas' || activeMaterial !== 'Todos' || productSearch) && (
-          <button className="btn store-clear" onClick={clearFilters}>
-            ✕ Limpiar filtros
-          </button>
-        )}
-      </div>
+      </>
     );
   }
 
@@ -216,7 +227,6 @@ export default function StorePage({ onContact }) {
                 {products.length === 1
                   ? '1 pieza en total'
                   : `${products.length} piezas en total`}
-                {' '}— explorá sin apuro.
               </p>
             </div>
           </div>
