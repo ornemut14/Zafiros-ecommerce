@@ -94,6 +94,31 @@ export default function StorePage({ onContact }) {
           />
         </div>
         <div className="filter-bar">
+          <div className="mat-row">
+            <span className="mat-label">Categoría</span>
+            <div className="mat-pills">
+              <button
+                className={`cat-pill${active === 'Todas' ? ' active' : ''}`}
+                onClick={() => setActive('Todas')}
+              >
+                Todas
+              </button>
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  className={`cat-pill${active === c.name ? ' active' : ''}`}
+                  onClick={() => setActive(c.name)}
+                >
+                  {c.name}
+                </button>
+              ))}
+              {isAdmin && (
+                <button className="cat-pill cat-add" onClick={() => setShowCategoryModal(true)}>
+                  + Nueva
+                </button>
+              )}
+            </div>
+          </div>
           {materials.length > 0 && (
             <div className="mat-row">
               <span className="mat-label">Material</span>
@@ -237,23 +262,6 @@ export default function StorePage({ onContact }) {
                   : `${products.length} piezas en total`}
               </p>
             </div>
-          </div>
-          <div className="cats" style={{ padding: '0 0 24px', border: 'none', maxWidth: 'none', margin: 0 }}>
-            <button
-              className={`cat-pill ${active === 'Todas' ? 'active' : ''}`}
-              onClick={() => setActive('Todas')}
-            >
-              Todas
-            </button>
-            {categories.map((c) => (
-              <button
-                key={c.id}
-                className={`cat-pill ${active === c.name ? 'active' : ''}`}
-                onClick={() => setActive(c.name)}
-              >
-                {c.name}
-              </button>
-            ))}
           </div>
           {renderFilters()}
           {renderResults()}

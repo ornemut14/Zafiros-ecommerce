@@ -5,29 +5,6 @@ import { CategoryIcon, SparkleIcon } from './CategoryIcon';
 export default function CategoryTabs({ categories, active, onSelect, isAdmin, onAddCategory }) {
   return (
     <>
-      <div className="cats" role="tablist" aria-label="Categorías">
-        <button
-          className={`cat-pill ${active === 'Todas' ? 'active' : ''}`}
-          onClick={() => onSelect('Todas')}
-        >
-          Todas
-        </button>
-        {categories.map((c) => (
-          <button
-            key={c.id}
-            className={`cat-pill ${active === c.name ? 'active' : ''}`}
-            onClick={() => onSelect(c.name)}
-          >
-            {c.name}
-          </button>
-        ))}
-        {isAdmin && (
-          <button className="cat-pill cat-add" onClick={onAddCategory}>
-            + Nueva categoría
-          </button>
-        )}
-      </div>
-
       <section className="shop-cats" id="coleccion">
         <div className="shop-cats-inner">
           <span className="section-eyebrow">Nuestra colección</span>
@@ -53,6 +30,12 @@ export default function CategoryTabs({ categories, active, onSelect, isAdmin, on
                 <span className="explore-cat-name">{c.name}</span>
               </button>
             ))}
+            {isAdmin && (
+              <button className="explore-cat cat-add" onClick={onAddCategory}>
+                <span className="explore-cat-emoji">+</span>
+                <span className="explore-cat-name">Nueva</span>
+              </button>
+            )}
           </div>
         </div>
       </section>
