@@ -87,6 +87,13 @@ function AppInner() {
               <>
                 <button
                   className="header-logout-btn"
+                  onClick={() => setView(view === 'store' ? 'admin' : 'store')}
+                  title={view === 'store' ? 'Ir al panel de administrador' : 'Volver a la tienda'}
+                >
+                  {view === 'store' ? 'Panel' : 'Tienda'}
+                </button>
+                <button
+                  className="header-logout-btn"
                   onClick={() => { if (confirm('¿Cerrar sesión de administrador?')) logout(); }}
                   title="Cerrar sesión y volver a la tienda"
                 >
@@ -124,15 +131,6 @@ function AppInner() {
           <button className="nav-link" onClick={openContact}>Contacto</button>
         </nav>
       </header>
-
-      {isAdmin && (
-        <div className="admin-bar">
-          <span>Modo administrador activo</span>
-          <button className="btn small" onClick={() => setView(view === 'store' ? 'admin' : 'store')}>
-            {view === 'store' ? 'Ver panel de productos' : 'Ver tienda'}
-          </button>
-        </div>
-      )}
 
       {view === 'admin' && isAdmin ? <AdminPage onViewStore={() => setView('store')} /> : <StorePage onContact={openContact} homeSignal={storeHomeSignal} />}
 
