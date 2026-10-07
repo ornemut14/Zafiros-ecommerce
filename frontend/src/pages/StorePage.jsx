@@ -80,6 +80,7 @@ export default function StorePage({ onContact }) {
   }
 
   function renderFilters() {
+    const hasActiveFilters = active !== 'Todas' || activeMaterial !== 'Todos' || productSearch;
     return (
       <>
         <div className="store-filter">
@@ -91,34 +92,41 @@ export default function StorePage({ onContact }) {
             placeholder="Buscar pieza..."
             aria-label="Buscar producto"
           />
-          {(active !== 'Todas' || activeMaterial !== 'Todos' || productSearch) && (
-            <button className="btn store-clear" onClick={clearFilters}>
-              ✕ Limpiar filtros
+        </div>
+        <div className="filter-bar">
+          {materials.length > 0 && (
+            <div className="mat-row">
+              <span className="mat-label">Material</span>
+              <div className="mat-pills">
+                <button
+                  className={`cat-pill${activeMaterial === 'Todos' ? ' active' : ''}`}
+                  onClick={() => setActiveMaterial('Todos')}
+                >
+                  Todos
+                </button>
+                {materials.map((m) => (
+                  <button
+                    key={m.id}
+                    className={`cat-pill${activeMaterial === m.name ? ' active' : ''}`}
+                    onClick={() => setActiveMaterial(m.name)}
+                  >
+                    {m.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {hasActiveFilters && (
+            <button className="filter-clear" onClick={clearFilters} title="Borrar filtros">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+              </svg>
+              Limpiar filtros
             </button>
           )}
         </div>
-        {materials.length > 0 && (
-          <div className="mat-row">
-            <span className="mat-label">Material</span>
-            <div className="mat-pills">
-              <button
-                className={`cat-pill${activeMaterial === 'Todos' ? ' active' : ''}`}
-                onClick={() => setActiveMaterial('Todos')}
-              >
-                Todos
-              </button>
-              {materials.map((m) => (
-                <button
-                  key={m.id}
-                  className={`cat-pill${activeMaterial === m.name ? ' active' : ''}`}
-                  onClick={() => setActiveMaterial(m.name)}
-                >
-                  {m.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </>
     );
   }
