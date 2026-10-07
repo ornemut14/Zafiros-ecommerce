@@ -84,12 +84,27 @@ function AppInner() {
 
           <div className="site-header-right">
             {isAdmin ? (
-              <button className="icon-btn" onClick={logout} title="Cerrar sesión" aria-label="Cerrar sesión">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M4 21c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" />
-                </svg>
-              </button>
+              <>
+                <button
+                  className="header-logout-btn"
+                  onClick={() => { if (confirm('¿Cerrar sesión de administrador?')) logout(); }}
+                  title="Cerrar sesión y volver a la tienda"
+                >
+                  Cerrar sesión
+                </button>
+                <button
+                  className="icon-btn"
+                  onClick={() => { if (confirm('¿Cerrar sesión de administrador?')) logout(); }}
+                  title="Cerrar sesión"
+                  aria-label="Cerrar sesión"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                </button>
+              </>
             ) : (
               <button className="icon-btn" onClick={() => setShowLogin(true)} title="Iniciar sesión" aria-label="Iniciar sesión">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -113,14 +128,9 @@ function AppInner() {
       {isAdmin && (
         <div className="admin-bar">
           <span>Modo administrador activo</span>
-          <span style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button className="btn small" onClick={() => setView(view === 'store' ? 'admin' : 'store')}>
-              {view === 'store' ? 'Ver panel de productos' : 'Ver tienda'}
-            </button>
-            <button className="btn small" onClick={() => { if (confirm('¿Cerrar sesión de administrador?')) logout(); }}>
-              Cerrar sesión
-            </button>
-          </span>
+          <button className="btn small" onClick={() => setView(view === 'store' ? 'admin' : 'store')}>
+            {view === 'store' ? 'Ver panel de productos' : 'Ver tienda'}
+          </button>
         </div>
       )}
 

@@ -84,7 +84,13 @@ button{font-family:var(--sans);}
   padding:18px 40px;gap:16px;
 }
 .site-header-left{display:flex;align-items:center;gap:6px;justify-content:flex-start;}
-.site-header-right{display:flex;align-items:center;gap:4px;justify-content:flex-end;}
+.site-header-right{display:flex;align-items:center;gap:8px;justify-content:flex-end;}
+.header-logout-btn{
+  background:transparent;border:none;color:var(--text);
+  font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+  cursor:pointer;padding:8px 4px;white-space:nowrap;transition:color .25s;
+}
+.header-logout-btn:hover{color:var(--gold-deep);}
 
 header.site-header h1,
 .brand-logo{
