@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import CartIcon from '../icons/cart.svg?react';
 import editorialLifestyle from '../assets/editorial.png';
 
-export default function StorePage({ onContact }) {
+export default function StorePage({ onContact, homeSignal }) {
   const { isAdmin } = useAuth();
   const { add, count } = useCart();
   const [categories, setCategories] = useState([]);
@@ -58,6 +58,14 @@ export default function StorePage({ onContact }) {
   }
 
   useEffect(() => { loadAll(); }, []);
+
+  // El header/footer (App) pide volver al inicio: cerrar catálogo y detalle
+  // para que los anchors (inicio, coleccion, productos, nosotros) existan de nuevo.
+  useEffect(() => {
+    if (!homeSignal) return;
+    setSelectedProduct(null);
+    setShowCatalog(false);
+  }, [homeSignal]);
 
   // Al cambiar filtros o búsqueda, volver a mostrar solo la primera tanda
   useEffect(() => { setShownCount(PAGE_SIZE); }, [active, activeMaterial, productSearch]);

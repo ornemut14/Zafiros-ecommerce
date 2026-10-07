@@ -12,6 +12,7 @@ function AppInner() {
   const [showLogin, setShowLogin] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [storeHomeSignal, setStoreHomeSignal] = useState(0);
 
   // El admin entra directo al panel (la landing es solo para clientes).
   // El cambio manual con el botón se respeta hasta el próximo login/logout.
@@ -22,9 +23,23 @@ function AppInner() {
   function goToId(id) {
     setView('store');
     setMenuOpen(false);
-    requestAnimationFrame(() => {
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    });
+    // Si estamos en catálogo completo o detalle, StorePage debe cerrarlos
+    // para que los anchors vuelvan a existir. Se avisa por señal.
+    setStoreHomeSignal((n) => n + 1);
+    // Esperar al re-render antes de scrollear, con fallback arriba del todo.
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      } else if (id === 'inicio') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // Si la sección aún no existe (catálogo cerrándose), reintentar una vez.
+        setTimeout(() => {
+          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+        }, 150);
+      }
+    }, 80);
   }
 
   function openContact() {
@@ -104,7 +119,7 @@ function AppInner() {
         </div>
       )}
 
-      {view === 'admin' && isAdmin ? <AdminPage /> : <StorePage onContact={openContact} />}
+      {view === 'admin' && isAdmin ? <AdminPage /> : <StorePage onContact={openContact} homeSignal={storeHomeSignal} />}
 
       <footer className="footer">
         <div className="footer-inner">
