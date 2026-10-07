@@ -37,7 +37,7 @@ export default function CategoryModal({
         {error && <div className="error-text">{error}</div>}
         <div className="modal-actions">
           <button className="btn" disabled={saving} onClick={onClose}>Cancelar</button>
-          <button className="btn solid" disabled={saving} onClick={handleSave}>
+          <button className="btn gold" disabled={saving} onClick={handleSave}>
             {saving ? 'Guardando...' : isEdit ? 'Guardar' : 'Agregar'}
           </button>
         </div>

@@ -152,7 +152,7 @@ export default function ProductModal({ categories, materials = [], product, onCl
         {error && <div className="error-text">{error}</div>}
         <div className="modal-actions">
           <button className="btn" disabled={saving} onClick={onClose}>Cancelar</button>
-          <button className="btn solid" disabled={uploading || saving} onClick={handleSave}>
+          <button className="btn gold" disabled={uploading || saving} onClick={handleSave}>
             {saving ? 'Guardando...' : 'Guardar'}
           </button>
         </div>

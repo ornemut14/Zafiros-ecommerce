@@ -245,7 +245,7 @@ export default function AdminPage({ onViewStore }) {
   ];
 
   return (
-    <main>
+    <main className="admin-page">
       <div className="admin-nav">
         <button
           className={`admin-nav-link${activeSection === 'home' ? ' active' : ''}`}
