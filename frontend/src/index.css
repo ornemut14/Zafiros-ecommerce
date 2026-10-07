@@ -494,6 +494,15 @@ main{padding:56px 40px 32px;max-width:1280px;margin:0 auto;}
 }
 .qty-ctrl button:hover:not(:disabled){border-color:var(--text);}
 .qty-ctrl button:disabled{opacity:.4;cursor:not-allowed;}
+.qty-ctrl .cart-remove{
+  width:30px;height:30px;border-radius:50%;
+  border:1px solid transparent;background:transparent;color:var(--muted);
+  margin-left:2px;
+}
+.qty-ctrl .cart-remove svg{width:16px;height:16px;}
+.qty-ctrl .cart-remove:hover:not(:disabled){
+  color:var(--danger);border-color:var(--danger);background:var(--wine-soft);
+}
 .total-row{display:flex;justify-content:space-between;margin:22px 0;font-size:17px;color:var(--text);font-weight:600;}
 .total-row span:last-child{font-family:var(--serif);font-size:24px;}
 
