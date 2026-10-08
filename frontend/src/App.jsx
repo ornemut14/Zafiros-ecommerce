@@ -36,18 +36,20 @@ function AppInner() {
       }, 120);
       return;
     }
-    // Esperar al re-render antes de scrollear.
-    setTimeout(() => {
+    // Esperar al re-render antes de scrollear (el catálogo/detalle tarda
+    // en cerrarse). Reintentar hasta 6 veces para que funcione también
+    // cuando se navega desde el catálogo completo o el detalle.
+    let attempts = 0;
+    function tryScroll() {
       const el = document.getElementById(id);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        // Si la sección aún no existe (catálogo cerrándose), reintentar una vez.
-        setTimeout(() => {
-          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-        }, 150);
+      } else if (attempts < 6) {
+        attempts += 1;
+        setTimeout(tryScroll, 120);
       }
-    }, 80);
+    }
+    setTimeout(tryScroll, 80);
   }
 
   function openContact() {
