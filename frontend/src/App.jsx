@@ -26,13 +26,21 @@ function AppInner() {
     // Si estamos en catálogo completo o detalle, StorePage debe cerrarlos
     // para que los anchors vuelvan a existir. Se avisa por señal.
     setStoreHomeSignal((n) => n + 1);
-    // Esperar al re-render antes de scrollear, con fallback arriba del todo.
+    // 'inicio' es el header con position:sticky -> scrollIntoView lo ve como
+    // ya visible y no scrollea. Por eso vamos directo arriba del todo.
+    if (id === 'inicio') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Reintentar tras el re-render (cierre de catálogo/detalle).
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 120);
+      return;
+    }
+    // Esperar al re-render antes de scrollear.
     setTimeout(() => {
       const el = document.getElementById(id);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth' });
-      } else if (id === 'inicio') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         // Si la sección aún no existe (catálogo cerrándose), reintentar una vez.
         setTimeout(() => {
